@@ -8,4 +8,5 @@
 [build.environment]
   NODE_VERSION = "20"
   NEXT_PUBLIC_BASE_URL = "https://maxim-portal.netlify.app"
+  TURBOPACK = "0"
 
