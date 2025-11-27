@@ -4,6 +4,7 @@ import { getPageMap } from 'nextra/page-map'
 import { LogoImage } from './components/LogoImage'
 import { SubNavbar } from './components/SubNavbar'
 import { CustomFooter } from './components/CustomFooter'
+import { ErrorDisplay } from './components/ErrorDisplay'
 import { getBaseUrl } from './utils/getBaseUrl'
 import 'nextra-theme-docs/style.css'
 
@@ -597,25 +598,22 @@ export default async function RootLayout({
                       return;
                     }
                     
-                    // Suppress "Connection closed" errors (from static export/client-side issues)
+                    // Suppress "Connection closed" errors ONLY if they're from turbopack/refresh
+                    // Don't suppress other "Connection closed" errors as they might be critical
                     if (
-                      message.includes('Connection closed') ||
-                      fullMessage.includes('Connection closed') ||
-                      message.includes('turbopack') && message.includes('closed')
+                      (message.includes('Connection closed') && (message.includes('turbopack') || message.includes('refresh'))) ||
+                      (fullMessage.includes('Connection closed') && (fullMessage.includes('turbopack') || fullMessage.includes('refresh')))
                     ) {
                       return;
                     }
                     
                     // Suppress refresh.js and dev server errors in production
+                    // But be careful not to suppress critical application errors
                     if (
-                      message.includes('refresh.js') ||
-                      fullMessage.includes('refresh.js') ||
-                      (message.includes('Application error') && fullMessage.includes('client-side exception'))
+                      (message.includes('refresh.js') && message.includes('WebSocket')) ||
+                      (fullMessage.includes('refresh.js') && fullMessage.includes('WebSocket'))
                     ) {
-                      // Only suppress if it's a known non-critical error
-                      if (fullMessage.includes('WebSocket') || fullMessage.includes('refresh')) {
-                        return;
-                      }
+                      return;
                     }
                     
                     originalError.apply(console, args);
@@ -648,36 +646,75 @@ export default async function RootLayout({
                     originalLog.apply(console, args);
                   };
                   
-                  // Global error handler to prevent app crashes from non-critical errors
+                  // Global error handler - only suppress truly non-critical errors
+                  // Don't prevent default for errors that might be critical
                   window.addEventListener('error', function(event) {
                     const errorMessage = event.message || '';
                     const errorSource = event.filename || '';
                     
-                    // Suppress non-critical errors that don't affect functionality
+                    // Only suppress known non-critical errors
+                    // Don't suppress if it might be a critical app error
                     if (
-                      errorMessage.includes('Connection closed') ||
-                      errorMessage.includes('WebSocket') ||
-                      errorSource.includes('refresh.js') ||
-                      errorMessage.includes('turbopack') && errorMessage.includes('closed')
+                      (errorMessage.includes('Connection closed') && errorSource.includes('turbopack')) ||
+                      (errorSource.includes('refresh.js') && errorMessage.includes('WebSocket'))
                     ) {
+                      // Log but don't crash
+                      console.info('Suppressed non-critical error:', errorMessage);
                       event.preventDefault();
                       return false;
                     }
+                    // Let other errors through - they might be critical
                   }, true);
                   
-                  // Handle unhandled promise rejections
+                  // Handle unhandled promise rejections - be more selective
                   window.addEventListener('unhandledrejection', function(event) {
                     const reason = event.reason?.message || String(event.reason || '');
                     
-                    // Suppress non-critical promise rejections
+                    // Only suppress known dev-only errors
                     if (
-                      reason.includes('Connection closed') ||
-                      reason.includes('WebSocket') ||
-                      reason.includes('refresh.js')
+                      reason.includes('refresh.js') ||
+                      (reason.includes('Connection closed') && reason.includes('turbopack'))
                     ) {
+                      console.info('Suppressed non-critical promise rejection:', reason);
                       event.preventDefault();
                       return false;
                     }
+                    // Let other rejections through
+                  });
+                  
+                  // Hide fallback once React is ready
+                  // Check for React root element
+                  function hideFallback() {
+                    const fallback = document.getElementById('root-fallback');
+                    if (fallback) {
+                      fallback.style.display = 'none';
+                    }
+                  }
+                  
+                  // Try to hide fallback after a short delay
+                  setTimeout(hideFallback, 1000);
+                  
+                  // Also hide when DOM is ready
+                  if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', hideFallback);
+                  } else {
+                    hideFallback();
+                  }
+                  
+                  // Hide when React root appears
+                  const observer = new MutationObserver(function(mutations) {
+                    const reactRoot = document.querySelector('[data-reactroot]') || 
+                                     document.querySelector('#__next') ||
+                                     document.querySelector('body > div');
+                    if (reactRoot) {
+                      hideFallback();
+                      observer.disconnect();
+                    }
+                  });
+                  
+                  observer.observe(document.body, {
+                    childList: true,
+                    subtree: true
                   });
                 }
               })();
@@ -686,6 +723,16 @@ export default async function RootLayout({
         />
       </Head>
       <body suppressHydrationWarning>
+        <noscript>
+          <div style={{
+            padding: '2rem',
+            textAlign: 'center',
+            fontFamily: 'system-ui, sans-serif',
+          }}>
+            <h1>JavaScript Required</h1>
+            <p>This site requires JavaScript to function. Please enable JavaScript in your browser settings.</p>
+          </div>
+        </noscript>
         <Layout
           // banner={banner}
           darkMode={false}
@@ -711,6 +758,7 @@ export default async function RootLayout({
         >
           {children}
         </Layout>
+        <ErrorDisplay />
       </body>
     </html>
   )

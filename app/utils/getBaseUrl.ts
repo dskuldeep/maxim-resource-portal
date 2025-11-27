@@ -1,9 +1,15 @@
 /**
  * Get the base URL for the application
  * Checks environment variables and falls back to Netlify URL
+ * This function is safe to call at build time and runtime
  */
 export function getBaseUrl(): string {
-  // Check for explicit base URL
+  // In browser, try to get from window.location
+  if (typeof window !== 'undefined') {
+    return `${window.location.protocol}//${window.location.host}`
+  }
+  
+  // Check for explicit base URL (build time)
   if (process.env.NEXT_PUBLIC_BASE_URL) {
     return process.env.NEXT_PUBLIC_BASE_URL
   }
