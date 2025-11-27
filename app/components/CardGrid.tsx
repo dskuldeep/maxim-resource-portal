@@ -14,36 +14,6 @@ interface CardGridProps {
 }
 
 export function CardGrid({ cards, cols = 3 }: CardGridProps) {
-  // Use useEffect to ensure styles are applied client-side only
-  if (typeof window === 'undefined') {
-    // Server-side: return without dynamic styles
-    return (
-      <div 
-        className="card-grid" 
-        style={{
-          display: 'grid',
-          gridTemplateColumns: `repeat(${Math.min(cols, 2)}, 1fr)`,
-          gap: '1.5rem',
-          marginTop: '2rem',
-          marginBottom: '2rem',
-        }}
-      >
-        {cards.map((card) => (
-          <div key={card.href} style={{ padding: '1.5rem', border: '1px solid #e5e7eb', borderRadius: '0.5rem' }}>
-            <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.125rem', fontWeight: '600', color: '#0c3b43' }}>
-              {card.title}
-            </h3>
-            {card.description && (
-              <p style={{ margin: 0, fontSize: '0.875rem', color: '#6b7280', lineHeight: '1.5' }}>
-                {card.description}
-              </p>
-            )}
-          </div>
-        ))}
-      </div>
-    )
-  }
-
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: `
@@ -69,7 +39,7 @@ export function CardGrid({ cards, cols = 3 }: CardGridProps) {
           marginBottom: '2rem',
         }}
       >
-      {cards.map((card, index) => (
+      {cards.map((card) => (
         <Link
           key={card.href}
           href={card.href}

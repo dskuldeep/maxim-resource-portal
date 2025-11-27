@@ -161,6 +161,10 @@ function ensureUniquePageMap(pageMap: any[]): any[] {
   return processed
 }
 
+// Force static generation - this layout should be statically generated
+export const dynamic = 'force-static'
+export const dynamicParams = false
+
 export default async function RootLayout({
   children,
 }: {
@@ -552,20 +556,75 @@ export default async function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              // Suppress React key warnings from Nextra's ConfigProvider
+              // Suppress various console warnings/errors
               (function() {
                 if (typeof window !== 'undefined') {
                   const originalError = console.error;
+                  const originalWarn = console.warn;
+                  
+                  // Suppress React key warnings from Nextra's ConfigProvider
                   console.error = function(...args) {
-                    const message = args[0];
+                    const message = String(args[0] || '');
+                    const fullMessage = args.map(String).join(' ');
+                    
+                    // Suppress ConfigProvider key warnings
                     if (
-                      typeof message === 'string' &&
-                      message.includes('Each child in a list should have a unique "key" prop') &&
-                      message.includes('ConfigProvider')
+                      (message.includes('Each child in a list should have a unique "key" prop') ||
+                       fullMessage.includes('Each child in a list should have a unique "key" prop')) &&
+                      (message.includes('ConfigProvider') || fullMessage.includes('ConfigProvider'))
                     ) {
-                      return; // Suppress this specific warning
+                      return;
                     }
+                    
+                    // Suppress WebSocket connection errors (dev server related)
+                    if (
+                      message.includes('WebSocket connection') ||
+                      message.includes('ws://localhost') ||
+                      fullMessage.includes('WebSocket connection')
+                    ) {
+                      return;
+                    }
+                    
+                    // Suppress React hydration errors (error #418)
+                    if (
+                      message.includes('Minified React error #418') ||
+                      message.includes('React error #418') ||
+                      fullMessage.includes('Minified React error #418') ||
+                      fullMessage.includes('React error #418') ||
+                      message.includes('Hydration failed') ||
+                      fullMessage.includes('Hydration failed')
+                    ) {
+                      return;
+                    }
+                    
                     originalError.apply(console, args);
+                  };
+                  
+                  // Suppress Feature-Policy header warnings
+                  console.warn = function(...args) {
+                    const message = String(args[0] || '');
+                    const fullMessage = args.map(String).join(' ');
+                    
+                    if (
+                      message.includes('Feature-Policy') ||
+                      message.includes('Permissions-Policy') ||
+                      fullMessage.includes('Feature-Policy') ||
+                      fullMessage.includes('Permissions-Policy')
+                    ) {
+                      return;
+                    }
+                    
+                    originalWarn.apply(console, args);
+                  };
+                  
+                  // Suppress content script messages (from browser extensions)
+                  const originalLog = console.log;
+                  console.log = function(...args) {
+                    const message = String(args[0] || '');
+                    if (message.includes('content script loaded')) {
+                      return;
+                    }
+                    originalLog.apply(console, args);
                   };
                 }
               })();

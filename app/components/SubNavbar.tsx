@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation'
 
 export function SubNavbar() {
   const pathname = usePathname()
+  
   const links = [
     { label: 'FAQs', href: '/faqs' },
     { label: 'Glossary', href: '/glossary' },
@@ -11,10 +12,12 @@ export function SubNavbar() {
   ]
 
   const isActive = (href: string) => {
+    // usePathname returns null during SSR, which is fine - it will update on client
+    if (!pathname) return false
     if (href === '/faqs') {
-      return pathname?.startsWith('/faqs') || pathname === '/'
+      return pathname.startsWith('/faqs') || pathname === '/'
     }
-    return pathname?.startsWith(href)
+    return pathname.startsWith(href)
   }
 
   return (

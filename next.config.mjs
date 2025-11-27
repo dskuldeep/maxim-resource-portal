@@ -12,14 +12,18 @@ const withNextra = nextra({
 // Export the final Next.js config with Nextra included
 export default withNextra({
   reactCompiler: true,
+  // Force static export for SEO benefits
   output: 'export',
   images: {
-    unoptimized: true
+    unoptimized: true // Required for static export
   },
   // Ensure proper static export
   trailingSlash: false,
   // Disable features that might cause issues in static export
   experimental: {
     optimizePackageImports: ['nextra-theme-docs']
-  }
+  },
+  // Additional optimizations for static sites
+  poweredByHeader: false, // Remove X-Powered-By header for security
+  compress: true, // Enable compression
 })

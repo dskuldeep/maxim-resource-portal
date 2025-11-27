@@ -1,4 +1,3 @@
-import { headers } from 'next/headers'
 import { getBaseUrl } from '../utils/getBaseUrl'
 
 interface StructuredDataProps {
@@ -8,7 +7,10 @@ interface StructuredDataProps {
   type?: 'FAQPage' | 'Article' | 'WebPage'
 }
 
-export async function StructuredData({
+// Force static generation - this component should be statically generated
+export const dynamic = 'force-static'
+
+export function StructuredData({
   pathname,
   title,
   description,
@@ -16,9 +18,9 @@ export async function StructuredData({
 }: StructuredDataProps) {
   const baseUrl = getBaseUrl()
 
-  // Get pathname from headers if not provided
-  const headersList = await headers()
-  const path = pathname || headersList.get('x-pathname') || '/'
+  // Use provided pathname or default to '/'
+  // In static export, we can't use headers() - pathname must be provided explicitly
+  const path = pathname || '/'
 
   const schema = {
     '@context': 'https://schema.org',

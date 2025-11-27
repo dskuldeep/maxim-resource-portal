@@ -4,12 +4,12 @@ A comprehensive FAQ portal for Maxim AI built with [Nextra](https://nextra.site/
 
 ## 🚀 Features
 
+- **Static Site Generation (SSG)** - Fully static HTML for maximum SEO benefits and performance
 - **Beautiful Documentation Theme** - Clean, modern design optimized for readability
-- **Full-Text Search** - Fast search powered by FlexSearch
+- **Full-Text Search** - Fast search powered by FlexSearch and Pagefind
 - **MDX Support** - Write content with Markdown and React components
 - **Responsive Design** - Works perfectly on desktop, tablet, and mobile
-- **Dark Mode** - Automatic theme switching support
-- **SEO Optimized** - Built-in meta tags and sitemap generation
+- **SEO Optimized** - Built-in meta tags, structured data (JSON-LD), sitemap, and robots.txt
 - **Type-Safe** - Built with TypeScript for better DX
 
 ## 📁 Project Structure
@@ -63,10 +63,24 @@ Visit [http://localhost:3000](http://localhost:3000) to see your FAQ portal.
 
 ### Build for Production
 
+This site is configured for **static export**, generating fully static HTML files optimized for SEO:
+
 ```bash
 npm run build
-npm start
 ```
+
+The static files will be generated in the `out/` directory. You can preview them locally:
+
+```bash
+npm run serve
+```
+
+**Static Site Benefits:**
+- ✅ All pages are pre-rendered as static HTML
+- ✅ Fast page loads and excellent SEO
+- ✅ Can be deployed to any static hosting (Netlify, Vercel, S3, etc.)
+- ✅ No server required - pure HTML/CSS/JS
+- ✅ Automatic sitemap.xml and robots.txt generation
 
 ## 📝 Adding New FAQ Content
 
@@ -158,13 +172,24 @@ Nextra uses Tailwind CSS. You can add custom styles by:
 
 ## 🚢 Deployment
 
+### Deploy to Netlify
+
+The site is configured for Netlify deployment with `netlify.toml`:
+
+1. Push your code to GitHub
+2. Connect your repository to Netlify
+3. Netlify will automatically:
+   - Run `npm run build`
+   - Deploy the `out/` directory
+   - Set up the `NEXT_PUBLIC_BASE_URL` environment variable
+
 ### Deploy to Vercel
 
 1. Push your code to GitHub
 2. Import project on [Vercel](https://vercel.com)
-3. Deploy with one click
+3. Vercel will automatically detect Next.js and deploy
 
-### Deploy to Other Platforms
+### Deploy to Other Static Hosts
 
 Build the static site:
 
@@ -172,11 +197,14 @@ Build the static site:
 npm run build
 ```
 
-The output will be in the `.next` directory. You can deploy this to:
-- Netlify
-- AWS S3 + CloudFront
-- GitHub Pages (with static export)
-- Any Node.js hosting platform
+The output will be in the `out/` directory. You can deploy this to:
+- **Netlify** - Configured with `netlify.toml`
+- **Vercel** - Automatic detection
+- **AWS S3 + CloudFront** - Upload `out/` directory
+- **GitHub Pages** - Deploy `out/` directory
+- **Any static hosting** - Just upload the `out/` folder
+
+**Note:** This is a fully static site - no Node.js server required!
 
 ## 📄 License
 

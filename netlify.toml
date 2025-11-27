@@ -2,10 +2,8 @@
   command = "npm run build"
   publish = "out"
 
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+# For static sites, we don't need catch-all redirects
+# Next.js static export already generates proper HTML files for each route
 
 [build.environment]
   NODE_VERSION = "20"
