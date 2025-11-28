@@ -189,6 +189,31 @@ export default async function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `
+              // Critical error handler - shows errors on white screen
+              window.addEventListener('error', function(e) {
+                var err = e.error || e.message || 'Unknown error';
+                console.error('CRITICAL ERROR:', err);
+                var fallback = document.getElementById('loading-fallback');
+                if (fallback) {
+                  fallback.innerHTML = '<div style="padding:20px;font-family:monospace;background:#fff;color:#000"><h1>Error Debug Info</h1><pre>' +
+                    'Error: ' + (err.message || err) + '\\n' +
+                    'File: ' + e.filename + '\\n' +
+                    'Line: ' + e.lineno + '\\n' +
+                    'Stack: ' + (err.stack || 'N/A') +
+                    '</pre><p>Check console for details</p><p>Device: ' + navigator.userAgent + '</p></div>';
+                }
+              });
+
+              // Hide loading fallback when React renders
+              window.addEventListener('DOMContentLoaded', function() {
+                setTimeout(function() {
+                  var fallback = document.getElementById('loading-fallback');
+                  if (fallback && document.querySelector('[data-pagefind-body]')) {
+                    fallback.style.display = 'none';
+                  }
+                }, 1000);
+              });
+
               // Polyfill for incognito/private browsing mode
               try {
                 if (typeof localStorage === 'undefined' || !localStorage) {
@@ -196,19 +221,23 @@ export default async function RootLayout({
                     getItem: function() { return null; },
                     setItem: function() {},
                     removeItem: function() {},
-                    clear: function() {}
+                    clear: function() {},
+                    length: 0,
+                    key: function() { return null; }
                   };
                 }
                 // Test if localStorage is actually accessible
                 localStorage.setItem('__test__', '1');
                 localStorage.removeItem('__test__');
               } catch (e) {
-                // localStorage is blocked in incognito mode, provide fallback
+                console.warn('localStorage blocked, using fallback');
                 window.localStorage = {
                   getItem: function() { return null; },
                   setItem: function() {},
                   removeItem: function() {},
-                  clear: function() {}
+                  clear: function() {},
+                  length: 0,
+                  key: function() { return null; }
                 };
               }
             `,
@@ -584,6 +613,26 @@ export default async function RootLayout({
         `}</style>
       </Head>
       <body suppressHydrationWarning>
+        {/* Loading indicator for slow connections */}
+        <div id="loading-fallback" style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: '#fff',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          fontFamily: 'system-ui, sans-serif',
+        }}>
+          <div style={{ textAlign: 'center' }}>
+            <h2>Loading Maxim AI Resources...</h2>
+            <p>If this message persists, check browser console for errors</p>
+          </div>
+        </div>
+
         <noscript>
           <div style={{
             padding: '2rem',
