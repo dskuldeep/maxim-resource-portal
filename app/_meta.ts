@@ -3,5 +3,4 @@ export default {
   faqs: 'FAQs',
   glossary: 'Glossary',
   guides: 'Guides',
-  examples: 'Examples',
 }
