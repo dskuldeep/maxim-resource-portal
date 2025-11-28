@@ -11,7 +11,8 @@ const withNextra = nextra({
  
 // Export the final Next.js config with Nextra included
 export default withNextra({
-  reactCompiler: true,
+  // Disable React Compiler - experimental and causes browser incompatibility
+  // reactCompiler: true,
   // Force static export for SEO benefits
   output: 'export',
   images: {
