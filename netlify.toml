@@ -2,9 +2,6 @@
   command = "npm run build"
   publish = "out"
 
-# For static sites, we don't need catch-all redirects
-# Next.js static export already generates proper HTML files for each route
-
 [build.environment]
   NODE_VERSION = "20"
   NEXT_PUBLIC_BASE_URL = "https://maxim-portal.netlify.app"
