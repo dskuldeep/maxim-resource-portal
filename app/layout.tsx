@@ -181,7 +181,6 @@ export default async function RootLayout({
       lang="en"
       dir="ltr"
       className="light"
-      suppressHydrationWarning
       style={{ colorScheme: 'light' }}
     >
       <Head>
@@ -189,12 +188,29 @@ export default async function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              // Log critical errors to console
+              // SHOW ALL ERRORS - NO SUPPRESSION
               window.addEventListener('error', function(e) {
-                console.error('ERROR:', e.message, 'at', e.filename + ':' + e.lineno);
+                console.error('=== CRITICAL ERROR ===');
+                console.error('Message:', e.message);
+                console.error('File:', e.filename);
+                console.error('Line:', e.lineno + ':' + e.colno);
                 if (e.error && e.error.stack) {
                   console.error('Stack:', e.error.stack);
                 }
+                console.error('=====================');
+
+                // Show error on screen
+                var errorDiv = document.createElement('div');
+                errorDiv.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#f00;color:#fff;padding:20px;z-index:999999;font-family:monospace;font-size:14px;';
+                errorDiv.innerHTML = '<strong>ERROR:</strong> ' + e.message + '<br>File: ' + e.filename + ':' + e.lineno;
+                document.body.appendChild(errorDiv);
+              });
+
+              // Catch React errors
+              window.addEventListener('unhandledrejection', function(e) {
+                console.error('=== UNHANDLED PROMISE REJECTION ===');
+                console.error('Reason:', e.reason);
+                console.error('===================================');
               });
 
               // Polyfill for incognito/private browsing mode
@@ -595,7 +611,7 @@ export default async function RootLayout({
 
         `}</style>
       </Head>
-      <body suppressHydrationWarning>
+      <body>
         <noscript>
           <div style={{
             padding: '2rem',
