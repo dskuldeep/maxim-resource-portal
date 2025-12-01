@@ -357,17 +357,40 @@ export default async function RootLayout({
             .sub-navbar-link {
               font-size: 0.875rem !important;
             }
-            /* Mobile content padding */
-            main.nextra-content,
-            div.nextra-content,
-            article.nextra-content,
-            main[class*="content"],
-            body > div > main,
-            div[class*="container"] > main {
-              padding-left: 1rem !important;
-              padding-right: 1rem !important;
-              padding-top: 1.5rem !important;
+            /* Fix mobile nav - push content down */
+            .nextra-mobile-nav,
+            aside.nextra-mobile-nav {
+              position: relative !important;
+              top: auto !important;
+              left: auto !important;
+              width: 100% !important;
+              height: 0 !important;
+              overflow: hidden !important;
+              transform: none !important;
+              padding-top: 0 !important;
+              transition: height 0.3s ease !important;
+              z-index: 1 !important;
             }
+            
+            /* When menu is open, expand height */
+            .nextra-mobile-nav[class*="x:[transform:translate3d(0,0,0)]"],
+            aside.nextra-mobile-nav[class*="x:[transform:translate3d(0,0,0)]"] {
+              height: auto !important;
+              min-height: 100vh !important;
+              overflow: visible !important;
+              padding-top: var(--nextra-navbar-height) !important;
+              transform: none !important;
+            }  transform: none !important;
+            }
+
+            /* Allow scrolling when menu is open */
+            body[style*="overflow: hidden"],
+            html[style*="overflow: hidden"] {
+              overflow: auto !important;
+              position: static !important;
+            }
+
+
           }
           /* Login button hover effect */
           .navbar-login-button:hover {
@@ -552,6 +575,23 @@ export default async function RootLayout({
             box-shadow: 0 0 0 3px rgba(31, 41, 55, 0.15); /* subtle focus ring */
           }
 
+          /* Mobile content padding override - must come after global padding */
+          @media (max-width: 768px) {
+            /* Adjust sidebar/TOC positioning for mobile */
+            aside {
+              top: 132px !important;
+            }
+            
+            /* Remove top spacing when mobile menu is closed */
+            main.nextra-content,
+            div.nextra-content,
+            article.nextra-content,
+            main[class*="content"],
+            body > div > main,
+            div[class*="container"] > main {
+              padding-top: 1rem !important;
+            }
+          }
 
         `}</style>
       </Head>
@@ -601,3 +641,4 @@ export default async function RootLayout({
     </html>
   )
 }
+

@@ -1,5 +1,5 @@
 export default {
-  index: 'Home',
+  index: 'Overview',
   faqs: 'FAQs',
   glossary: 'Glossary',
   guides: 'Guides',
